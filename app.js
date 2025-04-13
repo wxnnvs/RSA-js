@@ -27,8 +27,8 @@ app.get("/generate-keys", (req, res) => {
 
   try {
     // generate 2 prime numbers
-    const p = crypto.generatePrimeSync(1024, { bigint: true });
-    const q = crypto.generatePrimeSync(1024, { bigint: true });
+    const p = crypto.generatePrimeSync(512, { bigint: true });
+    const q = crypto.generatePrimeSync(512, { bigint: true });
 
     // calculate n = p * q
     const n = p * q;
