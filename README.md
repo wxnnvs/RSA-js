@@ -1,2 +1,4 @@
 # RSA-js
  A simple nodejs implementation of RSA based en- and decryption
+
+I AM NOT A CRYPTOGRAPHER, THIS REPO IS SOLELY FOR MY LEARNING AND UNDERSTANDING OF RSA ENCRYPTION!

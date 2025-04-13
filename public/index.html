@@ -1,0 +1,108 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSA-js</title>
+</head>
+
+<body>
+    <h1>RSA-js</h1>
+    <p>RSA encryption and decryption example using JavaScript.</p>
+
+    <h2>Generate Key Pair</h2>
+    <button type="button" id="generate-keys-button">Generate Key Pair</button><br><br>
+    <label for="generated-public-key">Public Key:</label><br>
+    <textarea id="generated-public-key" rows="6" cols="50" readonly></textarea><br><br>
+    <label for="generated-private-key">Private Key:</label><br>
+    <textarea id="generated-private-key" rows="6" cols="50" readonly></textarea><br><br>
+
+    <h2>Encrypt</h2>
+    <form id="encrypt-form" method="POST" action="/encrypt">
+        <label for="public-key">Public Key:</label><br>
+        <textarea id="public-key" name="publicKey" rows="4" cols="50"></textarea><br><br>
+        <label for="message">Message:</label><br>
+        <textarea id="message" name="message" rows="4" cols="50"></textarea><br><br>
+        <button type="button" id="encrypt-button">Encrypt</button>
+    </form>
+
+    <h2>Encrypted Message</h2>
+    <textarea id="encrypted-message" rows="4" cols="50" readonly></textarea><br><br>
+
+    <h2>Decrypt</h2>
+    <form id="decrypt-form" method="POST" action="/decrypt">
+        <label for="private-key">Private Key:</label><br>
+        <textarea id="private-key" name="privateKey" rows="4" cols="50"></textarea><br><br>
+        <label for="encrypted-message-input">Encrypted Message:</label><br>
+        <textarea id="encrypted-message-input" name="encryptedMessage" rows="4" cols="50"></textarea><br><br>
+        <button type="button" id="decrypt-button">Decrypt</button>
+    </form>
+
+    <h2>Decrypted Message</h2>
+    <textarea id="decrypted-message" rows="4" cols="50" readonly></textarea><br><br>
+
+    <script>
+        document.getElementById("generate-keys-button").addEventListener("click", async () => {
+            try {
+                const response = await fetch("/generate-keys");
+                if (!response.ok) {
+                    throw new Error(await response.text());
+                }
+
+                const keys = await response.text();
+                const [publicKey, privateKey] = keys.split("\n\n\n");
+
+                document.getElementById("generated-public-key").value = publicKey.trim();
+                document.getElementById("generated-private-key").value = privateKey.trim();
+            } catch (error) {
+                alert(`Error generating keys: ${error.message}`);
+            }
+        });
+
+        document.getElementById("encrypt-button").addEventListener("click", async () => {
+            const publicKey = document.getElementById("public-key").value;
+            const message = document.getElementById("message").value;
+
+            try {
+                const response = await fetch("/encrypt", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ publicKey, message }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(await response.text());
+                }
+
+                const encryptedMessage = await response.text();
+                document.getElementById("encrypted-message").value = encryptedMessage;
+            } catch (error) {
+                document.getElementById("encrypted-message").value = `Error: ${error.message}`;
+            }
+        });
+
+        document.getElementById("decrypt-button").addEventListener("click", async () => {
+            const privateKey = document.getElementById("private-key").value;
+            const encryptedMessage = document.getElementById("encrypted-message-input").value;
+
+            try {
+                const response = await fetch("/decrypt", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ privateKey, encryptedMessage }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(await response.text());
+                }
+
+                const decryptedMessage = await response.text();
+                document.getElementById("decrypted-message").value = decryptedMessage;
+            } catch (error) {
+                document.getElementById("decrypted-message").value = `Error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+
+</html>
