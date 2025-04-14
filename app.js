@@ -220,7 +220,7 @@ function decrypt(privateKey, encryptedMessage) {
     "utf-8"
   );
 
-  res.send(decryptedMessage);
+  return decryptedMessage;
 }
 
 // Start the server
