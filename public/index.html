@@ -1,59 +1,153 @@
-<html>
+<html lang="en" color-mode="user">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RSA-js</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        main {
+            margin: 10 0;
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            padding: 20px;
+            width: 80%;
+            max-width: 800px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        h1,
+        h2 {
+            color: #ffcc00;
+        }
+
+        textarea,
+        button,
+        dialog {
+            background-color: #2e2e2e;
+            color: #ffffff;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 8px;
+            width: 100%;
+            box-sizing: border-box;
+
+            resize: none;
+        }
+
+        button {
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #444;
+        }
+
+        dialog {
+            padding: 20px;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            width: 550px;
+            max-width: 90%;
+        }
+
+        pre {
+            background-color: #2e2e2e;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        details {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>RSA-js</h1>
-    <p>RSA encryption and decryption example using JavaScript.</p>
+    <main>
+        <h1>RSA-js</h1>
+        <p>Securely send messages without having to exchange a secret key using RSA based public-key encryption.</p>
 
-    <h2>Generate Key Pair</h2>
-    <button type="button" id="generate-keys-button">Generate Key Pair</button><br><br>
-    <label for="generated-public-key">Public Key:</label><br>
-    <textarea id="generated-public-key" rows="6" cols="50" readonly></textarea><br><br>
-    <label for="generated-private-key">Private Key:</label><br>
-    <textarea id="generated-private-key" rows="6" cols="50" readonly></textarea><br><br>
+        <h2>Generate Key Pair</h2>
+        <button type="button" id="generate-keys-button">Generate Key Pair</button><br><br>
+        <dialog id="generated-keys-dialog" closed>
+            <h3>Generated Keys</h3>
+            <p>Save these somewhere safe!</p><br>
+            <div id="generated-keys"></div>
+            <button id="close-dialog">Close</button>
+        </dialog>
 
-    <h2>Encrypt</h2>
-    <form id="encrypt-form" method="POST" action="/encrypt">
-        <label for="public-key">Public Key:</label><br>
-        <textarea id="public-key" name="publicKey" rows="4" cols="50"></textarea><br><br>
-        <label for="message">Message:</label><br>
-        <textarea id="message" name="message" rows="4" cols="50"></textarea><br><br>
-        <button type="button" id="encrypt-button">Encrypt</button>
-    </form>
+        <details>
+            <summary>
+                <h2>Encrypt</h2>
+            </summary>
+            <form id="encrypt-form" method="POST" action="/encrypt">
+                <label for="public-key">Public Key:</label><br>
+                <textarea id="public-key" name="publicKey" rows="4" cols="50"></textarea><br><br>
+                <label for="message">Message:</label><br>
+                <textarea id="message" name="message" rows="4" cols="50"></textarea><br><br>
+                <button type="button" id="encrypt-button">Encrypt</button>
+            </form>
+            <h2>Encrypted Message</h2>
+            <textarea id="encrypted-message" rows="4" cols="50" readonly></textarea><br><br>
+        </details>
 
-    <h2>Encrypted Message</h2>
-    <textarea id="encrypted-message" rows="4" cols="50" readonly></textarea><br><br>
+        <details>
+            <summary>
+                <h2>Decrypt</h2>
+            </summary>
+            <form id="decrypt-form" method="POST" action="/decrypt">
+                <label for="private-key">Private Key:</label><br>
+                <textarea id="private-key" name="privateKey" rows="4" cols="50"></textarea><br><br>
+                <label for="encrypted-message-input">Encrypted Message:</label><br>
+                <textarea id="encrypted-message-input" name="encryptedMessage" rows="4" cols="50"></textarea><br><br>
+                <button type="button" id="decrypt-button">Decrypt</button>
+            </form>
 
-    <h2>Decrypt</h2>
-    <form id="decrypt-form" method="POST" action="/decrypt">
-        <label for="private-key">Private Key:</label><br>
-        <textarea id="private-key" name="privateKey" rows="4" cols="50"></textarea><br><br>
-        <label for="encrypted-message-input">Encrypted Message:</label><br>
-        <textarea id="encrypted-message-input" name="encryptedMessage" rows="4" cols="50"></textarea><br><br>
-        <button type="button" id="decrypt-button">Decrypt</button>
-    </form>
-
-    <h2>Decrypted Message</h2>
-    <textarea id="decrypted-message" rows="4" cols="50" readonly></textarea><br><br>
+            <h2>Decrypted Message</h2>
+            <textarea id="decrypted-message" rows="4" cols="50" readonly></textarea><br><br>
+        </details>
+    </main>
 
     <script>
         document.getElementById("generate-keys-button").addEventListener("click", async () => {
             try {
+                const dialog = document.getElementById("generated-keys-dialog");
+                const generatedKeys = document.getElementById("generated-keys");
+                generatedKeys.innerHTML = ""; // Clear previous keys
+
                 const response = await fetch("/generate-keys");
                 if (!response.ok) {
                     throw new Error(await response.text());
                 }
 
                 const keys = await response.text();
-                const [publicKey, privateKey] = keys.split("\n\n\n");
+                generatedKeys.innerHTML = `<pre>${keys}</pre>`;
+                dialog.showModal();
 
-                document.getElementById("generated-public-key").value = publicKey.trim();
-                document.getElementById("generated-private-key").value = privateKey.trim();
             } catch (error) {
                 alert(`Error generating keys: ${error.message}`);
             }
@@ -102,6 +196,10 @@
                 document.getElementById("decrypted-message").value = `Error: ${error.message}`;
             }
         });
+
+        const dialog = document.getElementById("generated-keys-dialog");
+        const closeButton = document.getElementById("close-dialog");
+        closeButton.addEventListener("click", () => dialog.close());
     </script>
 </body>
 
